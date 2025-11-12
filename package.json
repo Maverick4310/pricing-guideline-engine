@@ -1,0 +1,14 @@
+{
+  "name": "pricing-guideline-engine",
+  "version": "1.0.0",
+  "description": "Render-based API to evaluate state-specific pricing guidelines for Navitas",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "csv-parser": "^3.0.0"
+  }
+}
