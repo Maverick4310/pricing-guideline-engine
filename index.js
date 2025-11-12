@@ -13,16 +13,23 @@ const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.csv"; // ✅ file is in p
 // Utility: safely evaluate conditions
 function evaluateCondition(cond, deal) {
   const val = deal[cond.field];
+  if (val == null) return false;
+
+  // normalize case for string comparisons
+  const left = typeof val === "string" ? val.trim().toLowerCase() : val;
+  const right = typeof cond.value === "string" ? cond.value.trim().toLowerCase() : cond.value;
+
   switch (cond.operator) {
-    case "=": return val == cond.value;
-    case "!=": return val != cond.value;
-    case "<": return val < cond.value;
-    case "<=": return val <= cond.value;
-    case ">": return val > cond.value;
-    case ">=": return val >= cond.value;
-    default: return false;
+    case "=":  return left === right;
+    case "!=": return left !== right;
+    case "<":  return left < right;
+    case "<=": return left <= right;
+    case ">":  return left > right;
+    case ">=": return left >= right;
+    default:   return false;
   }
 }
+
 
 // Load rules into memory from CSV
 function loadRules() {
