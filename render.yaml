@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pricing-guideline-engine
+    env: node
+    buildCommand: "npm install"
+    startCommand: "npm start"
+    autoDeploy: true
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
