@@ -1,7 +1,7 @@
 Guideline__c,State__c,Guideline_Text__c,Rule_JSON__c
 Minimum Amount is 2000,AL,Minimum Amount is 2000,"{""conditions"": [], ""requirements"": [{""field"": ""amount"", ""operator"": "">="", ""value"": 2000.0}]}"
 Amount Less Than 25,000 then residual type = FMV only.,AK,Amount Less Than 25,000 then residual type = FMV only.,"{""conditions"": [{""field"": ""amount"", ""operator"": ""<="", ""value"": 25000.0}], ""requirements"": [{""field"": ""residualType"", ""operator"": ""="", ""value"": ""FMV""}]}"
-If Less than 5000, FMV only,CA,If Less than 5000, FMV only,"{""conditions"":[{""field"":""amount"",""operator"":""<="",""value"":5000}],""requirements"":[{""field"":""residualType"",""operator"":""="",""value"":""FMV""}"
+If Less than 5000, FMV only,CA,If Less than 5000, FMV only,"{""conditions"":[{""field"":""amount"",""operator"":""<="",""value"":5000}],""requirements"":[{""field"":""residualType"",""operator"":""="",""value"":""FMV""}]}"
 If less than 10000, max 12% yield.,CT,If less than 10000, max 12% yield.,"{""conditions"": [{""field"": ""amount"", ""operator"": ""<="", ""value"": 10000.0}], ""requirements"": []}"
 Amount less than 2500, max yield 24%,DC,Amount less than 2500, max yield 24%,"{""conditions"": [{""field"": ""amount"", ""operator"": ""<="", ""value"": 2500.0}], ""requirements"": [{""field"": ""yield"", ""operator"": ""<="", ""value"": 0.24}]}"
 Amount less than 100000, then no sole prop business form,DE,Amount less than 100000, then no sole prop business form,"{""conditions"": [{""field"": ""amount"", ""operator"": ""<="", ""value"": 100000.0}], ""requirements"": [{""field"": ""businessForm"", ""operator"": ""!="", ""value"": ""Sole Prop""}]}"
