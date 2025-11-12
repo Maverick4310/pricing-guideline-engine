@@ -8,28 +8,34 @@ app.use(express.json());
 
 // In-memory rules cache
 let rulesByState = {};
-const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.csv"; // ✅ file is in project root
+const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.csv"; // file is in project root
 
 // Utility: safely evaluate conditions
 function evaluateCondition(cond, deal) {
   const val = deal[cond.field];
-  if (val == null) return false;
+  if (val == null) {
+    console.warn(`⚠️ Missing field '${cond.field}' in deal:`, deal);
+    return false;
+  }
 
   // normalize case for string comparisons
   const left = typeof val === "string" ? val.trim().toLowerCase() : val;
   const right = typeof cond.value === "string" ? cond.value.trim().toLowerCase() : cond.value;
 
+  let result;
   switch (cond.operator) {
-    case "=":  return left === right;
-    case "!=": return left !== right;
-    case "<":  return left < right;
-    case "<=": return left <= right;
-    case ">":  return left > right;
-    case ">=": return left >= right;
-    default:   return false;
+    case "=":  result = left === right; break;
+    case "!=": result = left !== right; break;
+    case "<":  result = left < right; break;
+    case "<=": result = left <= right; break;
+    case ">":  result = left > right; break;
+    case ">=": result = left >= right; break;
+    default:   result = false;
   }
-}
 
+  console.log(`🧩 Evaluating [${cond.field} ${cond.operator} ${cond.value}] -> ${result ? "✅ PASS" : "❌ FAIL"} (deal value: ${val})`);
+  return result;
+}
 
 // Load rules into memory from CSV
 function loadRules() {
@@ -44,6 +50,7 @@ function loadRules() {
     }
 
     const localRules = {};
+    console.log(`📂 Loading pricing rules from: ${filePath}`);
 
     fs.createReadStream(filePath)
       .pipe(csv())
@@ -54,8 +61,8 @@ function loadRules() {
         let jsonData = {};
         try {
           jsonData = JSON.parse(row.Rule_JSON__c || "{}");
-        } catch {
-          console.warn("⚠️ Invalid JSON for state:", state);
+        } catch (err) {
+          console.warn(`⚠️ Invalid JSON for ${state}: ${err.message}`);
         }
 
         const rule = {
@@ -68,11 +75,18 @@ function loadRules() {
       })
       .on("end", () => {
         rulesByState = localRules;
-        console.log(
-          `✅ Loaded ${Object.keys(rulesByState).length} states with ${
-            Object.values(rulesByState).flat().length
-          } total rules`
-        );
+        const totalStates = Object.keys(rulesByState).length;
+        const totalRules = Object.values(rulesByState).flat().length;
+        console.log(`✅ Loaded ${totalStates} states with ${totalRules} total rules`);
+
+        // Log each state's summary
+        for (const [state, rules] of Object.entries(rulesByState)) {
+          console.log(`🗺️ ${state} → ${rules.length} rule(s)`);
+          for (const rule of rules) {
+            console.log(`   • ${rule.text}`);
+          }
+        }
+
         resolve();
       })
       .on("error", (err) => {
@@ -86,6 +100,10 @@ function loadRules() {
 app.post("/evaluate", (req, res) => {
   const { state, amount, businessForm, residualType, yield: dealYield } = req.body;
 
+  console.log("---------------------------------------------------------");
+  console.log(`🔍 Evaluation request received for state: ${state}`);
+  console.log("Deal payload:", { amount, businessForm, residualType, yield: dealYield });
+
   if (!state) {
     return res.status(400).json({ error: "Missing required field: state" });
   }
@@ -94,24 +112,37 @@ app.post("/evaluate", (req, res) => {
   const rules = rulesByState[upperState] || [];
   const violations = [];
 
-  for (const rule of rules) {
-    const { conditions, requirements } = rule.json;
+  if (rules.length === 0) {
+    console.warn(`⚠️ No rules found for state: ${upperState}`);
+  }
 
-    // Only check requirements if all conditions are met
+  for (const rule of rules) {
+    console.log(`🧠 Checking rule: "${rule.text}"`);
+    const { conditions, requirements } = rule.json || {};
+
+    // Evaluate conditions
     const conditionsMet = (conditions || []).every((c) =>
       evaluateCondition(c, { amount, businessForm, residualType, yield: dealYield })
     );
+    console.log(`   → Conditions met: ${conditionsMet}`);
 
+    // Evaluate requirements
     if (conditionsMet) {
       const violated = (requirements || []).some(
         (r) => !evaluateCondition(r, { amount, businessForm, residualType, yield: dealYield })
       );
 
       if (violated) {
+        console.warn(`❌ Rule violated: "${rule.text}"`);
         violations.push({ rule: rule.text });
+      } else {
+        console.log(`✅ Rule passed: "${rule.text}"`);
       }
     }
   }
+
+  console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
+  console.log("---------------------------------------------------------");
 
   res.json({
     state: upperState,
