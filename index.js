@@ -18,22 +18,41 @@ function evaluateCondition(cond, deal) {
     return false;
   }
 
-  // normalize case for string comparisons
   const left = typeof val === "string" ? val.trim().toLowerCase() : val;
-  const right = typeof cond.value === "string" ? cond.value.trim().toLowerCase() : cond.value;
+  const right =
+    typeof cond.value === "string"
+      ? cond.value.trim().toLowerCase()
+      : cond.value;
 
   let result;
   switch (cond.operator) {
-    case "=": result = left === right; break;
-    case "!=": result = left !== right; break;
-    case "<": result = left < right; break;
-    case "<=": result = left <= right; break;
-    case ">": result = left > right; break;
-    case ">=": result = left >= right; break;
-    default: result = false;
+    case "=":
+      result = left === right;
+      break;
+    case "!=":
+      result = left !== right;
+      break;
+    case "<":
+      result = left < right;
+      break;
+    case "<=":
+      result = left <= right;
+      break;
+    case ">":
+      result = left > right;
+      break;
+    case ">=":
+      result = left >= right;
+      break;
+    default:
+      result = false;
   }
 
-  console.log(`🧩 Evaluating [${cond.field} ${cond.operator} ${cond.value}] -> ${result ? "✅ PASS" : "❌ FAIL"} (deal value: ${val})`);
+  console.log(
+    `🧩 Evaluating [${cond.field} ${cond.operator} ${cond.value}] -> ${
+      result ? "✅ PASS" : "❌ FAIL"
+    } (deal value: ${val})`
+  );
   return result;
 }
 
@@ -68,7 +87,7 @@ function loadRules() {
         const rule = {
           id: row.Guideline__c,
           text: row.Guideline_Text__c,
-          json: jsonData
+          json: jsonData,
         };
 
         if (!localRules[state]) localRules[state] = [];
@@ -80,7 +99,6 @@ function loadRules() {
         const totalRules = Object.values(rulesByState).flat().length;
         console.log(`✅ Loaded ${totalStates} states with ${totalRules} total rules`);
 
-        // Log state summaries
         for (const [state, rules] of Object.entries(rulesByState)) {
           console.log(`🗺️ ${state} → ${rules.length} rule(s)`);
           for (const rule of rules) console.log(`   • ${rule.text}`);
@@ -104,9 +122,13 @@ function generateExplanation(rule) {
       case "amount":
         return `Amount ${c.operator} ${c.value.toLocaleString()}`;
       case "businessForm":
-        return `Business form ${c.operator === "=" ? "is" : "is not"} ${c.value}`;
+        return `Business form ${
+          c.operator === "=" ? "is" : "is not"
+        } ${c.value}`;
       case "residualType":
-        return `Residual type ${c.operator === "=" ? "must be" : "cannot be"} ${c.value}`;
+        return `Residual type ${
+          c.operator === "=" ? "must be" : "cannot be"
+        } ${c.value}`;
       case "yield":
         return `Yield ${c.operator} ${(c.value * 100).toFixed(2)}%`;
       default:
@@ -117,9 +139,13 @@ function generateExplanation(rule) {
   const describeReq = (r) => {
     switch (r.field) {
       case "residualType":
-        return `Residual type ${r.operator === "=" ? "must be" : "cannot be"} ${r.value}`;
+        return `Residual type ${
+          r.operator === "=" ? "must be" : "cannot be"
+        } ${r.value}`;
       case "businessForm":
-        return `Business form ${r.operator === "=" ? "must be" : "cannot be"} ${r.value}`;
+        return `Business form ${
+          r.operator === "=" ? "must be" : "cannot be"
+        } ${r.value}`;
       case "yield":
         return `Maximum yield allowed is ${(r.value * 100).toFixed(2)}%`;
       case "amount":
@@ -129,8 +155,12 @@ function generateExplanation(rule) {
     }
   };
 
-  const condText = conditions.length ? conditions.map(describeCond).join(" AND ") : "";
-  const reqText = requirements.length ? requirements.map(describeReq).join(" AND ") : "";
+  const condText = conditions.length
+    ? conditions.map(describeCond).join(" AND ")
+    : "";
+  const reqText = requirements.length
+    ? requirements.map(describeReq).join(" AND ")
+    : "";
 
   if (condText && reqText) return `${condText}. ${reqText}.`;
   if (reqText) return `${reqText}.`;
@@ -140,11 +170,17 @@ function generateExplanation(rule) {
 
 // ⚙️ Evaluate endpoint
 app.post("/evaluate", (req, res) => {
-  const { state, amount, businessForm, residualType, yield: dealYield } = req.body;
+  const { state, amount, businessForm, residualType, yield: dealYield } =
+    req.body;
 
   console.log("---------------------------------------------------------");
   console.log(`🔍 Evaluation request received for state: ${state}`);
-  console.log("Deal payload:", { amount, businessForm, residualType, yield: dealYield });
+  console.log("Deal payload:", {
+    amount,
+    businessForm,
+    residualType,
+    yield: dealYield,
+  });
 
   if (!state) {
     return res.status(400).json({ error: "Missing required field: state" });
@@ -163,27 +199,40 @@ app.post("/evaluate", (req, res) => {
     const { conditions, requirements } = rule.json || {};
 
     const conditionsMet = (conditions || []).every((c) =>
-      evaluateCondition(c, { amount, businessForm, residualType, yield: dealYield })
+      evaluateCondition(c, {
+        amount,
+        businessForm,
+        residualType,
+        yield: dealYield,
+      })
     );
     console.log(`   → Conditions met: ${conditionsMet}`);
 
     if (conditionsMet) {
       const violated = (requirements || []).some(
-        (r) => !evaluateCondition(r, { amount, businessForm, residualType, yield: dealYield })
+        (r) =>
+          !evaluateCondition(r, {
+            amount,
+            businessForm,
+            residualType,
+            yield: dealYield,
+          })
       );
 
-if (violated) {
-  const notes = generateExplanation(rule);
-  console.warn(`❌ Rule violated: "${rule.text}" → ${notes}`);
-  
-  violations.push({
-    ruleId: rule.id,
-    rule: rule.text,
-    notes: `In the state of ${upperState}, ${notes}`
-  });
-} else {
-  console.log(`✅ Rule passed: "${rule.text}"`);
-}
+      if (violated) {
+        const notes = generateExplanation(rule);
+        console.warn(`❌ Rule violated: "${rule.text}" → ${notes}`);
+
+        violations.push({
+          ruleId: rule.id,
+          rule: rule.text,
+          notes: `Per ${upperState} guidelines, ${notes}`,
+        });
+      } else {
+        console.log(`✅ Rule passed: "${rule.text}"`);
+      }
+    }
+  }
 
   console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
   console.log("---------------------------------------------------------");
@@ -191,7 +240,7 @@ if (violated) {
   res.json({
     state: upperState,
     violationCount: violations.length,
-    violations
+    violations,
   });
 });
 
@@ -201,7 +250,7 @@ app.post("/reload", async (req, res) => {
   await loadRules();
   res.json({
     message: "Rules reloaded successfully",
-    statesLoaded: Object.keys(rulesByState).length
+    statesLoaded: Object.keys(rulesByState).length,
   });
 });
 
