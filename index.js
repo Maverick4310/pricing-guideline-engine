@@ -194,45 +194,50 @@ app.post("/evaluate", (req, res) => {
     console.warn(`⚠️ No rules found for state: ${upperState}`);
   }
 
-  for (const rule of rules) {
-    console.log(`🧠 Checking rule: "${rule.text}"`);
-    const { conditions, requirements } = rule.json || {};
+ for (const rule of rules) {
+  console.log(`🧠 Checking rule: "${rule.text}"`);
+  const { conditions = [], requirements = [] } = rule.json || {};
 
-    const conditionsMet = (conditions || []).every((c) =>
-      evaluateCondition(c, {
-        amount,
-        businessForm,
-        residualType,
-        yield: dealYield,
-      })
+  console.log("Conditions for this rule:", conditions);
+
+  const conditionsMet = conditions.every((c) =>
+    evaluateCondition(c, {
+      amount,
+      businessForm,
+      residualType,
+      yield: dealYield,
+    })
+  );
+
+  console.log(`   → Conditions met: ${conditionsMet}`);
+
+  if (conditionsMet) {
+    const violated = requirements.some(
+      (r) =>
+        !evaluateCondition(r, {
+          amount,
+          businessForm,
+          residualType,
+          yield: dealYield,
+        })
     );
-    console.log(`   → Conditions met: ${conditionsMet}`);
 
-    if (conditionsMet) {
-      const violated = (requirements || []).some(
-        (r) =>
-          !evaluateCondition(r, {
-            amount,
-            businessForm,
-            residualType,
-            yield: dealYield,
-          })
-      );
+    if (violated) {
+      const notes = generateExplanation(rule);
 
-      if (violated) {
-        const notes = generateExplanation(rule);
-        console.warn(`❌ Rule violated: "${rule.text}" → ${notes}`);
+      violations.push({
+        ruleId: rule.id,
+        rule: rule.text,
+        notes: `In the state of ${upperState}, ${notes}`,
+      });
 
-        violations.push({
-          ruleId: rule.id,
-          rule: rule.text,
-          notes: `Per ${upperState} guidelines, ${notes}`,
-        });
-      } else {
-        console.log(`✅ Rule passed: "${rule.text}"`);
-      }
+      console.warn(`❌ Rule violated: "${rule.text}"`);
+    } else {
+      console.log(`✅ Rule passed: "${rule.text}"`);
     }
   }
+}
+
 
   console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
   console.log("---------------------------------------------------------");
