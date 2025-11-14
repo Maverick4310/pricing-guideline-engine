@@ -172,15 +172,18 @@ app.post("/evaluate", (req, res) => {
         (r) => !evaluateCondition(r, { amount, businessForm, residualType, yield: dealYield })
       );
 
-      if (violated) {
-        const notes = generateExplanation(rule);
-        console.warn(`❌ Rule violated: "${rule.text}" → ${notes}`);
-        violations.push({ ruleId: rule.id, rule: rule.text, notes });
-      } else {
-        console.log(`✅ Rule passed: "${rule.text}"`);
-      }
-    }
-  }
+if (violated) {
+  const notes = generateExplanation(rule);
+  console.warn(`❌ Rule violated: "${rule.text}" → ${notes}`);
+  
+  violations.push({
+    ruleId: rule.id,
+    rule: rule.text,
+    notes: `In the state of ${upperState}, ${notes}`
+  });
+} else {
+  console.log(`✅ Rule passed: "${rule.text}"`);
+}
 
   console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
   console.log("---------------------------------------------------------");
