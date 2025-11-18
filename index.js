@@ -78,15 +78,32 @@ function loadRules() {
         if (!state) return;
 
         let jsonData = {};
+
+        // 🔍 RAW - See exactly what CSV delivered
+        const rawCell = row.Rule_JSON__c;
+        console.log(`RAW CSV JSON CELL for ${state}:`, rawCell);
+
+        // 🛠 Fix CSV escaping before parsing
         try {
-          jsonData = JSON.parse(row.Rule_JSON__c || "{}");
+          let raw = rawCell?.trim() || "{}";
+
+          // Strip outer Excel quotes
+          raw = raw.replace(/^"|"$/g, "");
+
+          // Replace doubled Excel quotes with normal quotes
+          raw = raw.replace(/""/g, '"');
+
+          // Parse final cleaned JSON
+          jsonData = JSON.parse(raw);
         } catch (err) {
-          console.warn(`⚠️ Invalid JSON for ${state}: ${err.message}`);
+          console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
+          console.warn("RAW VALUE WAS:", rawCell);
+          jsonData = {};
         }
 
         const rule = {
           id: row.Guideline__c,
-          text: row.Guideline_Text__c,
+          text: row.Guideline__c,
           json: jsonData,
         };
 
@@ -194,50 +211,49 @@ app.post("/evaluate", (req, res) => {
     console.warn(`⚠️ No rules found for state: ${upperState}`);
   }
 
- for (const rule of rules) {
-  console.log(`🧠 Checking rule: "${rule.text}"`);
-  const { conditions = [], requirements = [] } = rule.json || {};
+  for (const rule of rules) {
+    console.log(`🧠 Checking rule: "${rule.text}"`);
+    const { conditions = [], requirements = [] } = rule.json || {};
 
-  console.log("Conditions for this rule:", conditions);
+    console.log("Conditions for this rule:", conditions);
 
-  const conditionsMet = conditions.every((c) =>
-    evaluateCondition(c, {
-      amount,
-      businessForm,
-      residualType,
-      yield: dealYield,
-    })
-  );
-
-  console.log(`   → Conditions met: ${conditionsMet}`);
-
-  if (conditionsMet) {
-    const violated = requirements.some(
-      (r) =>
-        !evaluateCondition(r, {
-          amount,
-          businessForm,
-          residualType,
-          yield: dealYield,
-        })
+    const conditionsMet = conditions.every((c) =>
+      evaluateCondition(c, {
+        amount,
+        businessForm,
+        residualType,
+        yield: dealYield,
+      })
     );
 
-    if (violated) {
-      const notes = generateExplanation(rule);
+    console.log(`   → Conditions met: ${conditionsMet}`);
 
-      violations.push({
-        ruleId: rule.id,
-        rule: rule.text,
-        notes: `In the state of ${upperState}, ${notes}`,
-      });
+    if (conditionsMet) {
+      const violated = requirements.some(
+        (r) =>
+          !evaluateCondition(r, {
+            amount,
+            businessForm,
+            residualType,
+            yield: dealYield,
+          })
+      );
 
-      console.warn(`❌ Rule violated: "${rule.text}"`);
-    } else {
-      console.log(`✅ Rule passed: "${rule.text}"`);
+      if (violated) {
+        const notes = generateExplanation(rule);
+
+        violations.push({
+          ruleId: rule.id,
+          rule: rule.text,
+          notes: `In the state of ${upperState}, ${notes}`,
+        });
+
+        console.warn(`❌ Rule violated: "${rule.text}"`);
+      } else {
+        console.log(`✅ Rule passed: "${rule.text}"`);
+      }
     }
   }
-}
-
 
   console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
   console.log("---------------------------------------------------------");
