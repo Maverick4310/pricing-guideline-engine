@@ -9,7 +9,7 @@ app.use(express.json());
 
 // In-memory rules cache
 let rulesByState = {};
-const RULES_FILE_PATH = "./pricing-rules.json";
+const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.json"; // ✨ Updated to match your filename
 
 // 🧮 Utility: safely evaluate conditions
 function evaluateCondition(cond, deal) {
@@ -162,7 +162,54 @@ function generateExplanation(rule) {
   return "Deal did not meet the stated guideline.";
 }
 
-// ⚙️ Evaluate endpoint
+// ✨ NEW: Helper functions to format guidelines for display
+function formatConditionsForDisplay(conditions) {
+  if (!conditions || conditions.length === 0) {
+    return "Applies to all deals";
+  }
+  
+  const conditionTexts = conditions.map(cond => {
+    switch (cond.field) {
+      case "amount":
+        return `Amount ${cond.operator} $${cond.value.toLocaleString()}`;
+      case "businessForm":
+        return `Business form ${cond.operator === "=" ? "is" : "is not"} ${cond.value}`;
+      case "residualType":
+        return `Residual type ${cond.operator === "=" ? "is" : "is not"} ${cond.value}`;
+      case "yield":
+        return `Yield ${cond.operator} ${(cond.value * 100).toFixed(1)}%`;
+      default:
+        return `${cond.field} ${cond.operator} ${cond.value}`;
+    }
+  });
+  
+  return conditionTexts.join(" AND ");
+}
+
+function formatRequirementsForDisplay(requirements) {
+  if (!requirements || requirements.length === 0) {
+    return "No specific requirements";
+  }
+  
+  const reqTexts = requirements.map(req => {
+    switch (req.field) {
+      case "amount":
+        return `Minimum amount: $${req.value.toLocaleString()}`;
+      case "businessForm":
+        return `Business form ${req.operator === "=" ? "must be" : "cannot be"} ${req.value}`;
+      case "residualType":
+        return `Residual type ${req.operator === "=" ? "must be" : "cannot be"} ${req.value}`;
+      case "yield":
+        return `Maximum yield: ${(req.value * 100).toFixed(1)}%`;
+      default:
+        return `${req.field} ${req.operator} ${req.value}`;
+    }
+  });
+  
+  return reqTexts.join(" AND ");
+}
+
+// ⚙️ ENHANCED Evaluate endpoint - REPLACES the original one
 app.post("/evaluate", (req, res) => {
   const { state, amount, businessForm, residualType, yield: dealYield } =
     req.body;
@@ -183,6 +230,7 @@ app.post("/evaluate", (req, res) => {
   const upperState = state.toUpperCase();
   const rules = rulesByState[upperState] || [];
   const violations = [];
+  const applicableGuidelines = []; // ✨ NEW: Track all guidelines for this state
 
   if (rules.length === 0) {
     console.warn(`⚠️ No rules found for state: ${upperState}`);
@@ -192,6 +240,16 @@ app.post("/evaluate", (req, res) => {
     console.log(`🧠 Checking rule: "${rule.text}"`);
     
     const { conditions = [], requirements = [] } = rule;
+
+    // ✨ NEW: Format guideline for response (regardless of violation status)
+    const guideline = {
+      id: rule.id,
+      text: rule.text,
+      conditions: formatConditionsForDisplay(conditions),
+      requirements: formatRequirementsForDisplay(requirements),
+      appliesTo: conditions.length > 0 ? "Conditional" : "All deals"
+    };
+    applicableGuidelines.push(guideline);
 
     console.log("Conditions for this rule:", conditions);
     console.log("Requirements for this rule:", requirements);
@@ -239,10 +297,18 @@ app.post("/evaluate", (req, res) => {
   console.log(`📊 Evaluation complete: ${violations.length} violation(s) found.`);
   console.log("---------------------------------------------------------");
 
+  // ✨ ENHANCED RESPONSE: Include guidelines
   res.json({
     state: upperState,
     violationCount: violations.length,
     violations,
+    guidelines: applicableGuidelines, // ✨ NEW: All applicable guidelines
+    evaluationSummary: {
+      totalRules: rules.length,
+      rulesEvaluated: applicableGuidelines.length,
+      rulesPassed: applicableGuidelines.length - violations.length,
+      rulesViolated: violations.length
+    }
   });
 });
 
