@@ -95,18 +95,24 @@ function loadRules() {
         const rawCell = row.Rule_JSON__c;
         console.log(`RAW CSV JSON CELL for ${state}:`, rawCell);
 
-        try {
-          let raw = rawCell?.trim() || "{}";
+try {
+  let raw = rawCell?.trim() || "{}";
 
-          raw = raw.replace(/^"|"$/g, "");   // remove outer quotes
-          raw = raw.replace(/""/g, '"');     // unescape double quotes
+  // Strip outer Excel quotes
+  raw = raw.replace(/^"|"$/g, "");
 
-          jsonData = JSON.parse(raw);
-        } catch (err) {
-          console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
-          console.warn("RAW VALUE WAS:", rawCell);
-          jsonData = {};
-        }
+  // Replace doubled Excel quotes -> normal quotes
+  raw = raw.replace(/""/g, '"');
+
+  // ⭐ Fix trailing bracket corruption from CSV ("]]]" -> "]")
+  raw = raw.replace(/]+$/, "]");
+
+  jsonData = JSON.parse(raw);
+} catch (err) {
+  console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
+  console.warn("RAW VALUE WAS:", rawCell);
+  jsonData = {};
+}
 
         const rule = {
           id: row.Guideline__c,
