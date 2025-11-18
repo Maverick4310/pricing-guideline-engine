@@ -74,6 +74,10 @@ function loadRules() {
     fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row) => {
+
+            // 🔍 DEBUG — LOG THE HEADERS AND RAW JSON CELL
+    console.log("CSV HEADERS I SEE:", Object.keys(row));
+    console.log("RAW JSON CELL:", row.Rule_JSON__c);
         const state = row.State__c?.trim()?.toUpperCase();
         if (!state) return;
 
