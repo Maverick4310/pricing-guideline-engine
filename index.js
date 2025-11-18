@@ -9,7 +9,7 @@ app.use(express.json());
 
 // In-memory rules cache
 let rulesByState = {};
-const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.json"; // ✨ Updated to match your filename
+const RULES_FILE_PATH = "./pricing-rules.json"; // ✨ Updated to match your filename
 
 // 🧮 Utility: safely evaluate conditions
 function evaluateCondition(cond, deal) {
