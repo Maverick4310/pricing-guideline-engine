@@ -20,11 +20,18 @@ function evaluateCondition(cond, deal) {
     return false;
   }
 
-  const left = typeof val === "string" ? val.trim().toLowerCase() : val;
-  const right =
-    typeof cond.value === "string"
-      ? cond.value.trim().toLowerCase()
-      : cond.value;
+  // FIXED: Handle string comparisons more carefully
+  let left, right;
+  
+  if (typeof val === "string" && typeof cond.value === "string") {
+    // For string fields like businessForm, residualType - do case-insensitive comparison
+    left = val.trim().toLowerCase();
+    right = cond.value.trim().toLowerCase();
+  } else {
+    // For numeric fields, ensure both are numbers
+    left = typeof val === "string" ? parseFloat(val) : val;
+    right = typeof cond.value === "string" ? parseFloat(cond.value) : cond.value;
+  }
 
   let result;
   switch (cond.operator) {
@@ -47,13 +54,14 @@ function evaluateCondition(cond, deal) {
       result = left >= right;
       break;
     default:
+      console.warn(`⚠️ Unknown operator: ${cond.operator}`);
       result = false;
   }
 
   console.log(
     `🧩 Evaluating [${cond.field} ${cond.operator} ${cond.value}] -> ${
       result ? "✅ PASS" : "❌ FAIL"
-    } (deal value: ${val})`
+    } (deal value: ${val}, compared as: ${left} vs ${right})`
   );
   return result;
 }
@@ -95,24 +103,24 @@ function loadRules() {
         const rawCell = row.Rule_JSON__c;
         console.log(`RAW CSV JSON CELL for ${state}:`, rawCell);
 
-try {
-  let raw = rawCell?.trim() || "{}";
+        try {
+          let raw = rawCell?.trim() || "{}";
 
-  // Strip outer Excel quotes
-  raw = raw.replace(/^"|"$/g, "");
+          // Strip outer Excel quotes
+          raw = raw.replace(/^"|"$/g, "");
 
-  // Replace doubled Excel quotes -> normal quotes
-  raw = raw.replace(/""/g, '"');
+          // Replace doubled Excel quotes -> normal quotes
+          raw = raw.replace(/""/g, '"');
 
-  // ⭐ Fix trailing bracket corruption from CSV ("]]]" -> "]")
-  raw = raw.replace(/]+$/, "]");
+          // ⭐ FIXED: Added backslash to escape the ] and provide better default structure
+          raw = raw.replace(/\]+$/, "]");
 
-  jsonData = JSON.parse(raw);
-} catch (err) {
-  console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
-  console.warn("RAW VALUE WAS:", rawCell);
-  jsonData = {};
-}
+          jsonData = JSON.parse(raw);
+        } catch (err) {
+          console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
+          console.warn("RAW VALUE WAS:", rawCell);
+          jsonData = { conditions: [], requirements: [] }; // FIXED: Provide default structure
+        }
 
         const rule = {
           id: row.Guideline__c,
@@ -222,7 +230,20 @@ app.post("/evaluate", (req, res) => {
 
   for (const rule of rules) {
     console.log(`🧠 Checking rule: "${rule.text}"`);
-    const { conditions = [], requirements = [] } = rule.json || {};
+    
+    // FIXED: Add safety checks
+    if (!rule.json || typeof rule.json !== 'object') {
+      console.warn(`⚠️ Invalid rule JSON for: ${rule.text}`);
+      continue;
+    }
+    
+    const { conditions = [], requirements = [] } = rule.json;
+
+    // FIXED: Ensure arrays
+    if (!Array.isArray(conditions) || !Array.isArray(requirements)) {
+      console.warn(`⚠️ Invalid conditions/requirements structure for: ${rule.text}`);
+      continue;
+    }
 
     console.log("Conditions for this rule:", conditions);
 
