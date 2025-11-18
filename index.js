@@ -63,13 +63,12 @@ function evaluateCondition(cond, deal) {
 
 
 function loadRules() {
-  console.log("📁 Files in working directory:", fs.readdirSync("./"));
-console.log("📄 Looking for:", filePath);
   return new Promise((resolve) => {
     const filePath = RULES_FILE_PATH;
-    console.log("📁 Directory contents:", fs.readdirSync("./"));
-console.log("📄 Looking for:", filePath);
 
+    // Put logs ONLY AFTER filePath is defined
+    console.log("📁 Files in working directory:", fs.readdirSync("./"));
+    console.log("📄 Looking for:", filePath);
 
     if (!fs.existsSync(filePath)) {
       console.error("❌ Rules file not found:", filePath);
@@ -84,30 +83,24 @@ console.log("📄 Looking for:", filePath);
     fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row) => {
+        // 🔍 DEBUG — LOG THE HEADERS AND RAW JSON CELL
+        console.log("CSV HEADERS I SEE:", Object.keys(row));
+        console.log("RAW JSON CELL:", row.Rule_JSON__c);
 
-            // 🔍 DEBUG — LOG THE HEADERS AND RAW JSON CELL
-    console.log("CSV HEADERS I SEE:", Object.keys(row));
-    console.log("RAW JSON CELL:", row.Rule_JSON__c);
         const state = row.State__c?.trim()?.toUpperCase();
         if (!state) return;
 
         let jsonData = {};
 
-        // 🔍 RAW - See exactly what CSV delivered
         const rawCell = row.Rule_JSON__c;
         console.log(`RAW CSV JSON CELL for ${state}:`, rawCell);
 
-        // 🛠 Fix CSV escaping before parsing
         try {
           let raw = rawCell?.trim() || "{}";
 
-          // Strip outer Excel quotes
-          raw = raw.replace(/^"|"$/g, "");
+          raw = raw.replace(/^"|"$/g, "");   // remove outer quotes
+          raw = raw.replace(/""/g, '"');     // unescape double quotes
 
-          // Replace doubled Excel quotes with normal quotes
-          raw = raw.replace(/""/g, '"');
-
-          // Parse final cleaned JSON
           jsonData = JSON.parse(raw);
         } catch (err) {
           console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
@@ -130,11 +123,6 @@ console.log("📄 Looking for:", filePath);
         const totalRules = Object.values(rulesByState).flat().length;
         console.log(`✅ Loaded ${totalStates} states with ${totalRules} total rules`);
 
-        for (const [state, rules] of Object.entries(rulesByState)) {
-          console.log(`🗺️ ${state} → ${rules.length} rule(s)`);
-          for (const rule of rules) console.log(`   • ${rule.text}`);
-        }
-
         resolve();
       })
       .on("error", (err) => {
@@ -143,6 +131,7 @@ console.log("📄 Looking for:", filePath);
       });
   });
 }
+
 
 // 🧠 Helper: Generate human-readable explanation for violations
 function generateExplanation(rule) {
