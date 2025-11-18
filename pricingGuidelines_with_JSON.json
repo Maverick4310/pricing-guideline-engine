@@ -1,0 +1,317 @@
+{
+  "states": {
+    "AL": [
+      {
+        "id": "AL_MIN_AMOUNT",
+        "text": "Minimum Amount is 2000",
+        "conditions": [],
+        "requirements": [
+          {"field": "amount", "operator": ">=", "value": 2000}
+        ]
+      }
+    ],
+    "AK": [
+      {
+        "id": "AK_FMV_LIMIT", 
+        "text": "Amount Less Than 25,000 then residual type = FMV only.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 25000}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "CA": [
+      {
+        "id": "CA_FMV_ONLY",
+        "text": "If Less than 5000, FMV only", 
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 5000}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "CT": [
+      {
+        "id": "CT_YIELD_LIMIT",
+        "text": "If less than 10000, max 12% yield.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 10000}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.12}
+        ]
+      }
+    ],
+    "DC": [
+      {
+        "id": "DC_YIELD_LIMIT", 
+        "text": "Amount less than 2500, max yield 24%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 2500}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.24}
+        ]
+      }
+    ],
+    "DE": [
+      {
+        "id": "DE_NO_SOLE_PROP",
+        "text": "Amount less than 100000, then no sole prop business form",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 100000}
+        ],
+        "requirements": [
+          {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
+        ]
+      }
+    ],
+    "FL": [
+      {
+        "id": "FL_YIELD_LOW",
+        "text": "Amount is less than or equal to 500000, max yield 18%.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 500000}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.18}
+        ]
+      },
+      {
+        "id": "FL_YIELD_HIGH", 
+        "text": "Amount greater than 500000, max yield is 25%",
+        "conditions": [
+          {"field": "amount", "operator": ">", "value": 500000}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.25}
+        ]
+      }
+    ],
+    "GA": [
+      {
+        "id": "GA_YIELD_LIMIT",
+        "text": "Amount less than 3000, max yield 16%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 3000}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.16}
+        ]
+      }
+    ],
+    "KY": [
+      {
+        "id": "KY_SOLE_PROP_FMV",
+        "text": "Amount less than 15000 AND Sole Prop. Residual type = FMV", 
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 15000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "MA": [
+      {
+        "id": "MA_MAX_YIELD",
+        "text": "Max yield = 20%.",
+        "conditions": [],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.20}
+        ]
+      }
+    ],
+    "MI": [
+      {
+        "id": "MI_NO_SOLE_PROP", 
+        "text": "No Sole Prop Business Form",
+        "conditions": [],
+        "requirements": [
+          {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
+        ]
+      }
+    ],
+    "MN": [
+      {
+        "id": "MN_SOLE_PROP_FMV",
+        "text": "Less than or equal 100000 and business form = Sole Prop then FMV residual type",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 100000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "MS": [
+      {
+        "id": "MS_SOLE_PROP_LOW_FMV",
+        "text": "Business Form = Sole Prop. Amount less than or equal to 2500, then FMV residual type.",
+        "conditions": [
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"},
+          {"field": "amount", "operator": "<=", "value": 2500}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      },
+      {
+        "id": "MS_SOLE_PROP_HIGH_YIELD",
+        "text": "Business Form = Sole Prop. if greater than 2500 then max yield = 15%",
+        "conditions": [
+          {"field": "amount", "operator": ">", "value": 2500},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.15}
+        ]
+      }
+    ],
+    "MO": [
+      {
+        "id": "MO_SOLE_PROP_FMV",
+        "text": "Amount less than 5000 and business form = Sole Prop then FMV residual type.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 5000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "NE": [
+      {
+        "id": "NE_SOLE_PROP_FMV", 
+        "text": "Amount less than 25000 and business form = Sole Prop, then FMV residual type.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 25000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "NV": [
+      {
+        "id": "NV_FMV_ONLY",
+        "text": "Residual Type = FMV only",
+        "conditions": [],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "NM": [
+      {
+        "id": "NM_SOLE_PROP_FMV",
+        "text": "Amount less than 5000 and business form = Sole Prop then FMV residual type.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 5000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "NY": [
+      {
+        "id": "NY_HIGH_AMOUNT_YIELD",
+        "text": "Amount greater than 50000 Max Yield 25%.",
+        "conditions": [
+          {"field": "amount", "operator": ">", "value": 50000}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.25}
+        ]
+      },
+      {
+        "id": "NY_SOLE_PROP_YIELD",
+        "text": "If less than or equal to 50000 and business form = Sole Prop, max yield = 16%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 50000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.16}
+        ]
+      },
+      {
+        "id": "NY_NON_SOLE_PROP_YIELD",
+        "text": "If less than or equal to 50000 and business form is not Sole Prop, max yield = 25%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 50000},
+          {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.25}
+        ]
+      }
+    ],
+    "ND": [
+      {
+        "id": "ND_SOLE_PROP_FMV",
+        "text": "Amount less than 35000 and business form = Sole Prop, then it must be a FMV residual type.",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 35000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "PA": [
+      {
+        "id": "PA_MAX_YIELD",
+        "text": "Max yield = 36%.",
+        "conditions": [],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.36}
+        ]
+      }
+    ],
+    "RI": [
+      {
+        "id": "RI_SOLE_PROP_FMV",
+        "text": "Business Form = Sole Prop and amount less than or equal to 25000 then residual type = FMV",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 25000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "SD": [
+      {
+        "id": "SD_FMV_ONLY",
+        "text": "Residual Type = FMV only",
+        "conditions": [],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      }
+    ],
+    "TX": [
+      {
+        "id": "TX_MAX_YIELD",
+        "text": "Max yield = 28%.",
+        "conditions": [],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.28}
+        ]
+      }
+    ]
+  }
+}
