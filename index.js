@@ -1,16 +1,15 @@
 // index.js
 import express from "express";
 import fs from "fs";
-import csv from "csv-parser";
 
-console.log("🔥 Server started — index.js debug version is running");
+console.log("🔥 Server started — index.js JSON version is running");
 
 const app = express();
 app.use(express.json());
 
 // In-memory rules cache
 let rulesByState = {};
-const RULES_FILE_PATH = "./pricingGuidelines_with_JSON.csv"; // file is in project root
+const RULES_FILE_PATH = "./pricing-rules.json";
 
 // 🧮 Utility: safely evaluate conditions
 function evaluateCondition(cond, deal) {
@@ -20,7 +19,7 @@ function evaluateCondition(cond, deal) {
     return false;
   }
 
-  // FIXED: Handle string comparisons more carefully
+  // Handle string comparisons more carefully
   let left, right;
   
   if (typeof val === "string" && typeof cond.value === "string") {
@@ -66,90 +65,51 @@ function evaluateCondition(cond, deal) {
   return result;
 }
 
-// 📄 Load rules into memory from CSV
-
-
-
+// 📄 Load rules from JSON file
 function loadRules() {
   return new Promise((resolve) => {
-    const filePath = RULES_FILE_PATH;
-
-    // Put logs ONLY AFTER filePath is defined
     console.log("📁 Files in working directory:", fs.readdirSync("./"));
-    console.log("📄 Looking for:", filePath);
+    console.log("📄 Looking for:", RULES_FILE_PATH);
 
-    if (!fs.existsSync(filePath)) {
-      console.error("❌ Rules file not found:", filePath);
+    if (!fs.existsSync(RULES_FILE_PATH)) {
+      console.error("❌ Rules file not found:", RULES_FILE_PATH);
       rulesByState = {};
       resolve();
       return;
     }
 
-    const localRules = {};
-    console.log(`📂 Loading pricing rules from: ${filePath}`);
-
-    fs.createReadStream(filePath)
-      .pipe(csv())
-      .on("data", (row) => {
-        // 🔍 DEBUG — LOG THE HEADERS AND RAW JSON CELL
-        console.log("CSV HEADERS I SEE:", Object.keys(row));
-        console.log("RAW JSON CELL:", row.Rule_JSON__c);
-
-        const state = row.State__c?.trim()?.toUpperCase();
-        if (!state) return;
-
-        let jsonData = {};
-
-        const rawCell = row.Rule_JSON__c;
-        console.log(`RAW CSV JSON CELL for ${state}:`, rawCell);
-
-        try {
-          let raw = rawCell?.trim() || "{}";
-
-          // Strip outer Excel quotes
-          raw = raw.replace(/^"|"$/g, "");
-
-          // Replace doubled Excel quotes -> normal quotes
-          raw = raw.replace(/""/g, '"');
-
-          // ⭐ FIXED: Added backslash to escape the ] and provide better default structure
-          raw = raw.replace(/\]+$/, "]");
-
-          jsonData = JSON.parse(raw);
-        } catch (err) {
-          console.warn(`⚠️ Invalid JSON for ${state}:`, err.message);
-          console.warn("RAW VALUE WAS:", rawCell);
-          jsonData = { conditions: [], requirements: [] }; // FIXED: Provide default structure
-        }
-
-        const rule = {
-          id: row.Guideline__c,
-          text: row.Guideline__c,
-          json: jsonData,
-        };
-
-        if (!localRules[state]) localRules[state] = [];
-        localRules[state].push(rule);
-      })
-      .on("end", () => {
-        rulesByState = localRules;
-        const totalStates = Object.keys(rulesByState).length;
-        const totalRules = Object.values(rulesByState).flat().length;
-        console.log(`✅ Loaded ${totalStates} states with ${totalRules} total rules`);
-
-        resolve();
-      })
-      .on("error", (err) => {
-        console.error("❌ Error loading CSV:", err.message);
-        resolve();
+    try {
+      console.log(`📂 Loading pricing rules from: ${RULES_FILE_PATH}`);
+      const rawData = fs.readFileSync(RULES_FILE_PATH, 'utf8');
+      const rulesData = JSON.parse(rawData);
+      
+      rulesByState = rulesData.states;
+      
+      const totalStates = Object.keys(rulesByState).length;
+      const totalRules = Object.values(rulesByState).flat().length;
+      console.log(`✅ Loaded ${totalStates} states with ${totalRules} total rules`);
+      
+      // Debug: Show loaded rules structure
+      console.log("📋 Rules loaded by state:");
+      Object.entries(rulesByState).forEach(([state, rules]) => {
+        console.log(`   ${state}: ${rules.length} rule(s)`);
+        rules.forEach(rule => {
+          console.log(`     - ${rule.id}: ${rule.conditions.length} condition(s), ${rule.requirements.length} requirement(s)`);
+        });
       });
+      
+      resolve();
+    } catch (err) {
+      console.error("❌ Error loading JSON rules:", err.message);
+      rulesByState = {};
+      resolve();
+    }
   });
 }
 
-
 // 🧠 Helper: Generate human-readable explanation for violations
 function generateExplanation(rule) {
-  const { conditions = [], requirements = [] } = rule.json || {};
+  const { conditions = [], requirements = [] } = rule;
 
   const describeCond = (c) => {
     switch (c.field) {
@@ -231,21 +191,10 @@ app.post("/evaluate", (req, res) => {
   for (const rule of rules) {
     console.log(`🧠 Checking rule: "${rule.text}"`);
     
-    // FIXED: Add safety checks
-    if (!rule.json || typeof rule.json !== 'object') {
-      console.warn(`⚠️ Invalid rule JSON for: ${rule.text}`);
-      continue;
-    }
-    
-    const { conditions = [], requirements = [] } = rule.json;
-
-    // FIXED: Ensure arrays
-    if (!Array.isArray(conditions) || !Array.isArray(requirements)) {
-      console.warn(`⚠️ Invalid conditions/requirements structure for: ${rule.text}`);
-      continue;
-    }
+    const { conditions = [], requirements = [] } = rule;
 
     console.log("Conditions for this rule:", conditions);
+    console.log("Requirements for this rule:", requirements);
 
     const conditionsMet = conditions.every((c) =>
       evaluateCondition(c, {
@@ -282,6 +231,8 @@ app.post("/evaluate", (req, res) => {
       } else {
         console.log(`✅ Rule passed: "${rule.text}"`);
       }
+    } else {
+      console.log(`⏩ Rule skipped (conditions not met): "${rule.text}"`);
     }
   }
 
