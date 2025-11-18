@@ -3,6 +3,8 @@ import express from "express";
 import fs from "fs";
 import csv from "csv-parser";
 
+console.log("🔥 Server started — index.js debug version is running");
+
 const app = express();
 app.use(express.json());
 
@@ -57,9 +59,17 @@ function evaluateCondition(cond, deal) {
 }
 
 // 📄 Load rules into memory from CSV
+
+
+
 function loadRules() {
+  console.log("📁 Files in working directory:", fs.readdirSync("./"));
+console.log("📄 Looking for:", filePath);
   return new Promise((resolve) => {
     const filePath = RULES_FILE_PATH;
+    console.log("📁 Directory contents:", fs.readdirSync("./"));
+console.log("📄 Looking for:", filePath);
+
 
     if (!fs.existsSync(filePath)) {
       console.error("❌ Rules file not found:", filePath);
