@@ -138,17 +138,22 @@
       }
     ],
     "MI": [
-      {
-        "id": "MI_NO_SOLE_PROP", 
-        "text": "No Sole Prop Business Form",
-        "conditions": [
-          {"field": "residualType", "operator": "!=", "value": "FMV"}
-        ],
-        "requirements": [
-          {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
-        ]
-      }
+  {
+    "id": "MI_NO_SOLE_PROP", 
+    "text": "No Sole Prop Business Form",
+    "conditions": [
+      {"field": "residualType", "operator": "!=", "value": "FMV"}
     ],
+    "requirements": [
+      {
+        "field": "businessForm", 
+        "operator": "!=", 
+        "value": "Sole Prop",
+        "allowNull": true
+      }
+    ]
+  }
+],
     "MN": [
       {
         "id": "MN_SOLE_PROP_FMV",
