@@ -1,5 +1,17 @@
 {
   "states": {
+    "AR": [
+      {
+        "id": "AR_MAX_YIELD",
+        "text": "Max yield = 17%.",
+        "conditions": [
+          {"field": "residualType", "operator": "!=", "value": "FMV"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.17}
+        ]
+      }
+    ],
     "AL": [
       {
         "id": "AL_MIN_AMOUNT",
@@ -137,19 +149,19 @@
         ]
       }
     ],
-"MI": [
-  {
-    "id": "MI_NO_SOLE_PROP", 
-    "text": "No Sole Prop Business Form",
-    "conditions": [
-      {"field": "residualType", "operator": "!=", "value": "FMV"},
-      {"field": "businessForm", "operator": "!=", "value": null}
+    "MI": [
+      {
+        "id": "MI_NO_SOLE_PROP", 
+        "text": "No Sole Prop Business Form",
+        "conditions": [
+          {"field": "residualType", "operator": "!=", "value": "FMV"},
+          {"field": "businessForm", "operator": "!=", "value": null}
+        ],
+        "requirements": [
+          {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
+        ]
+      }
     ],
-    "requirements": [
-      {"field": "businessForm", "operator": "!=", "value": "Sole Prop"}
-    ]
-  }
-],
     "MN": [
       {
         "id": "MN_SOLE_PROP_FMV",
@@ -176,9 +188,9 @@
       },
       {
         "id": "MS_LOW_AMOUNT_FMV_ONLY",
-        "text": "If less than or equal to $2500, FMV Only",
+        "text": "If less than 2000, FMV Only",
         "conditions": [
-          {"field": "amount", "operator": "<=", "value": 2500}
+          {"field": "amount", "operator": "<=", "value": 2000}
         ],
         "requirements": [
           {"field": "residualType", "operator": "=", "value": "FMV"}
@@ -186,9 +198,9 @@
       },
       {
         "id": "MS_HIGH_AMOUNT_YIELD_LIMIT",
-        "text": "If greater than $2500, Max APR 15% and not FMV",
+        "text": "If greater than 2000, Max APR 15% and not FMV",
         "conditions": [
-          {"field": "amount", "operator": ">", "value": 2500},
+          {"field": "amount", "operator": ">", "value": 2000},
           {"field": "residualType", "operator": "!=", "value": "FMV"}
         ],
         "requirements": [
@@ -220,6 +232,18 @@
         "requirements": [
           {"field": "residualType", "operator": "=", "value": "FMV"}
         ]
+      },
+      {
+        "id": "NE_SOLE_PROP_YIELD_LIMIT",
+        "text": "If less than 25000 and business form = Sole Prop then Max APR 16%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 25000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"},
+          {"field": "residualType", "operator": "!=", "value": "FMV"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.16}
+        ]
       }
     ],
     "NV": [
@@ -242,6 +266,26 @@
         ],
         "requirements": [
           {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      },
+      {
+        "id": "NM_POINTS_LOW",
+        "text": "Maximum points paid on transaction: if amount <= $50K then 2%",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 50000}
+        ],
+        "requirements": [
+          {"field": "points", "operator": "<=", "value": 0.02}
+        ]
+      },
+      {
+        "id": "NM_POINTS_HIGH",
+        "text": "Maximum points paid on transaction: if amount > $50K then 6%",
+        "conditions": [
+          {"field": "amount", "operator": ">", "value": 50000}
+        ],
+        "requirements": [
+          {"field": "points", "operator": "<=", "value": 0.06}
         ]
       }
     ],
@@ -295,6 +339,18 @@
         ]
       }
     ],
+    "OK": [
+      {
+        "id": "OK_MAX_YIELD",
+        "text": "Max yield = 45%.",
+        "conditions": [
+          {"field": "residualType", "operator": "!=", "value": "FMV"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.45}
+        ]
+      }
+    ],
     "PA": [
       {
         "id": "PA_MAX_YIELD",
@@ -339,6 +395,18 @@
         ],
         "requirements": [
           {"field": "yield", "operator": "<=", "value": 0.28}
+        ]
+      }
+    ],
+    "VA": [
+      {
+        "id": "VA_FMV_ONLY",
+        "text": "If less than 5000, FMV only",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 5000}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
         ]
       }
     ]
