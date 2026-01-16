@@ -38,10 +38,18 @@
     ],
     "CA": [
       {
-        "id": "CA_FMV_ONLY",
-        "text": "If less than 5000, FMV only", 
+        "id": "CA_MIN_AMOUNT",
+        "text": "Minimum amount is 5000",
+        "conditions": [],
+        "requirements": [
+          {"field": "amount", "operator": ">=", "value": 5000}
+        ]
+      },
+      {
+        "id": "CA_FMV_UNDER_10K",
+        "text": "If less than 10000, FMV only", 
         "conditions": [
-          {"field": "amount", "operator": "<=", "value": 5000}
+          {"field": "amount", "operator": "<=", "value": 10000}
         ],
         "requirements": [
           {"field": "residualType", "operator": "=", "value": "FMV"}
