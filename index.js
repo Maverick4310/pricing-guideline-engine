@@ -125,6 +125,8 @@ function generateExplanation(rule) {
         } ${c.value}`;
       case "yield":
         return `Yield ${c.operator} ${(c.value * 100).toFixed(2)}%`;
+      case "points":
+        return `Points ${c.operator} ${(c.value * 100).toFixed(2)}%`;
       default:
         return `${c.field} ${c.operator} ${c.value}`;
     }
@@ -144,6 +146,8 @@ function generateExplanation(rule) {
         return `Maximum yield allowed is ${(r.value * 100).toFixed(2)}%`;
       case "amount":
         return `Minimum amount requirement is $${r.value.toLocaleString()}`;
+      case "points":
+        return `Maximum points allowed is ${(r.value * 100).toFixed(2)}%`;
       default:
         return `${r.field} ${r.operator} ${r.value}`;
     }
@@ -178,6 +182,8 @@ function formatConditionsForDisplay(conditions) {
         return `Residual type ${cond.operator === "=" ? "is" : "is not"} ${cond.value}`;
       case "yield":
         return `Yield ${cond.operator} ${(cond.value * 100).toFixed(1)}%`;
+      case "points":
+        return `Points ${cond.operator} ${(cond.value * 100).toFixed(1)}%`;
       default:
         return `${cond.field} ${cond.operator} ${cond.value}`;
     }
@@ -201,6 +207,8 @@ function formatRequirementsForDisplay(requirements) {
         return `Residual type ${req.operator === "=" ? "must be" : "cannot be"} ${req.value}`;
       case "yield":
         return `Maximum yield: ${(req.value * 100).toFixed(1)}%`;
+      case "points":
+        return `Maximum points: ${(req.value * 100).toFixed(1)}%`;
       default:
         return `${req.field} ${req.operator} ${req.value}`;
     }
@@ -211,7 +219,7 @@ function formatRequirementsForDisplay(requirements) {
 
 // ⚙️ ENHANCED Evaluate endpoint - REPLACES the original one
 app.post("/evaluate", (req, res) => {
-  const { state, amount, businessForm, residualType, yield: dealYield } =
+  const { state, amount, businessForm, residualType, yield: dealYield, points } =
     req.body;
 
   console.log("---------------------------------------------------------");
@@ -221,6 +229,7 @@ app.post("/evaluate", (req, res) => {
     businessForm,
     residualType,
     yield: dealYield,
+    points,
   });
 
   if (!state) {
@@ -260,6 +269,7 @@ app.post("/evaluate", (req, res) => {
         businessForm,
         residualType,
         yield: dealYield,
+        points, // ✨ NEW: Include points in evaluation
       })
     );
 
@@ -273,6 +283,7 @@ app.post("/evaluate", (req, res) => {
             businessForm,
             residualType,
             yield: dealYield,
+            points, // ✨ NEW: Include points in evaluation
           })
       );
 
