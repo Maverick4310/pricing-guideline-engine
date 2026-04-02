@@ -402,11 +402,21 @@
     ],
     "RI": [
       {
-        "id": "RI_SOLE_PROP_YIELD",
-        "text": "If less than or equal to 25000 and business form = Sole Prop then max yield = 21%",
+        "id": "RI_SOLE_PROP_FMV",
+        "text": "If Sole Prop and amount <= 25000, residual type must be FMV (licensing provision)",
         "conditions": [
           {"field": "amount", "operator": "<=", "value": 25000},
-          {"field": "businessForm", "operator": "=", "value": "Sole Prop"},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
+        ],
+        "requirements": [
+          {"field": "residualType", "operator": "=", "value": "FMV"}
+        ]
+      },
+      {
+        "id": "RI_MAX_YIELD",
+        "text": "If amount <= 25000 and not FMV, max yield = 21% (usury provision)",
+        "conditions": [
+          {"field": "amount", "operator": "<=", "value": 25000},
           {"field": "residualType", "operator": "!=", "value": "FMV"}
         ],
         "requirements": [
