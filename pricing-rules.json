@@ -70,7 +70,7 @@
     ],
     "CT": [
       {
-        "id": "CT_YIELD_LIMIT",
+        "id": "CT_YIELD_LOW",
         "text": "If less than 10000, max 12% yield.",
         "conditions": [
           {"field": "amount", "operator": "<=", "value": 10000},
@@ -78,6 +78,18 @@
         ],
         "requirements": [
           {"field": "yield", "operator": "<=", "value": 0.12}
+        ]
+      },
+      {
+        "id": "CT_YIELD_MID",
+        "text": "If amount > 10000 and <= 250000, max yield 17%.",
+        "conditions": [
+          {"field": "amount", "operator": ">", "value": 10000},
+          {"field": "amount", "operator": "<=", "value": 250000},
+          {"field": "residualType", "operator": "!=", "value": "FMV"}
+        ],
+        "requirements": [
+          {"field": "yield", "operator": "<=", "value": 0.17}
         ]
       }
     ],
@@ -402,21 +414,11 @@
     ],
     "RI": [
       {
-        "id": "RI_SOLE_PROP_FMV",
-        "text": "If Sole Prop and amount <= 25000, residual type must be FMV (licensing provision)",
+        "id": "RI_SOLE_PROP_YIELD",
+        "text": "If less than or equal to 25000 and business form = Sole Prop then max yield = 21%",
         "conditions": [
           {"field": "amount", "operator": "<=", "value": 25000},
-          {"field": "businessForm", "operator": "=", "value": "Sole Prop"}
-        ],
-        "requirements": [
-          {"field": "residualType", "operator": "=", "value": "FMV"}
-        ]
-      },
-      {
-        "id": "RI_MAX_YIELD",
-        "text": "If amount <= 25000 and not FMV, max yield = 21% (usury provision)",
-        "conditions": [
-          {"field": "amount", "operator": "<=", "value": 25000},
+          {"field": "businessForm", "operator": "=", "value": "Sole Prop"},
           {"field": "residualType", "operator": "!=", "value": "FMV"}
         ],
         "requirements": [
@@ -437,12 +439,12 @@
     "TX": [
       {
         "id": "TX_MAX_YIELD",
-        "text": "Max yield = 28%.",
+        "text": "Max yield = 18%.",
         "conditions": [
           {"field": "residualType", "operator": "!=", "value": "FMV"}
         ],
         "requirements": [
-          {"field": "yield", "operator": "<=", "value": 0.28}
+          {"field": "yield", "operator": "<=", "value": 0.18}
         ]
       }
     ],
